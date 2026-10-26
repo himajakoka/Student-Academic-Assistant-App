@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Campus Events{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+
+  <!-- Page Header -->
+  <div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--navy-900); letter-spacing: -0.02em;">
+      Browse College Events
+    </h1>
+    <p style="color: var(--text-muted); font-size: 1rem; margin-top: 0.35rem;">
+      Search and register for technical symposiums, cultural nights, workshops, and sports tournaments.
+    </p>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="filter-bar-container">
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+      <div class="search-input-group">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input 
+          type="text" 
+          id="search-input" 
+          class="search-input" 
+          placeholder="Search events by title, keyword, or venue..." 
+          value="{{ search_query }}"
+        >
+      </div>
+    </div>
+
+    <!-- Category Filter Chips -->
+    <div class="filter-categories-list">
+      <button type="button" class="filter-chip {% if not selected_category or selected_category == 'all' %}active{% endif %}" data-category="all">
+        All Categories
+      </button>
+      <button type="button" class="filter-chip {% if selected_category == 'Technical' %}active{% endif %}" data-category="Technical">
+        💻 Technical
+      </button>
+      <button type="button" class="filter-chip {% if selected_category == 'Cultural' %}active{% endif %}" data-category="Cultural">
+        🎭 Cultural
+      </button>
+      <button type="button" class="filter-chip {% if selected_category == 'Workshop' %}active{% endif %}" data-category="Workshop">
+        🛠️ Workshop
+      </button>
+      <button type="button" class="filter-chip {% if selected_category == 'Seminar' %}active{% endif %}" data-category="Seminar">
+        🎙️ Seminar
+      </button>
+      <button type="button" class="filter-chip {% if selected_category == 'Sports' %}active{% endif %}" data-category="Sports">
+        ⚽ Sports
+      </button>
+      <button type="button" class="filter-chip {% if selected_category == 'Other' %}active{% endif %}" data-category="Other">
+        📌 Other
+      </button>
+    </div>
+  </div>
+
+  <!-- Section Count Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+    <div id="events-count-badge" style="font-weight: 700; color: var(--navy-800); font-size: 1.05rem;">
+      Loading events...
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="resetFilters()">Clear Filters</button>
+    </div>
+  </div>
+
+  <!-- Dynamic Event Grid Container (loaded via events.js) -->
+  <div class="events-grid" id="events-container">
+    <!-- Rendered via JavaScript fetch -->
+  </div>
+
+</div>
+
+<!-- Student Registration Modal -->
+<div class="modal-backdrop" id="registration-modal">
+  <div class="modal-window">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title">Event Registration</h3>
+        <div id="reg-event-title" style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-top: 0.2rem;"></div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="App.closeModal('registration-modal')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <!-- Form View -->
+    <div id="registration-form-view">
+      <form id="student-registration-form">
+        <input type="hidden" id="reg-event-id">
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label form-label-required" for="reg-student-name">Student Full Name</label>
+            <input type="text" id="reg-student-name" class="form-control" placeholder="e.g., Rahul Sharma" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label form-label-required" for="reg-student-email">College / Personal Email</label>
+            <input type="email" id="reg-student-email" class="form-control" placeholder="e.g., rahul.s@presidencyuniversity.in" required>
+            <div class="form-help">Your registration pass will be associated with this address.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label form-label-required" for="reg-student-regno">Student Register Number (USN)</label>
+            <input type="text" id="reg-student-regno" class="form-control" placeholder="e.g., 2024BCA014" style="text-transform: uppercase;" required>
+            <div class="form-help">Enter your official University Register Number (case-insensitive).</div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('registration-modal')">Cancel</button>
+          <button type="submit" id="register-submit-btn" class="btn btn-primary">Confirm Registration</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Success Ticket View -->
+    <div id="registration-success-view" style="display: none;">
+      <div class="modal-body">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <div style="width: 52px; height: 52px; border-radius: 50%; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--navy-900);">Registration Confirmed!</h3>
+          <p style="color: var(--text-muted); font-size: 0.88rem;">Your entry pass is active. Save or print this ticket for campus check-in.</p>
+        </div>
+
+        <div class="ticket-card printable-area">
+          <div class="ticket-header">
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Registration ID</div>
+              <div id="ticket-reg-id" class="ticket-id-tag">REG-2026-XXXX</div>
+            </div>
+            <span class="status-pill status-open">Confirmed Pass</span>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <div id="ticket-event-title" style="font-weight: 700; color: var(--navy-900); font-size: 1.1rem; line-height: 1.3;">Event Name</div>
+          </div>
+
+          <div class="ticket-grid">
+            <div>
+              <div class="ticket-field-label">Student Name</div>
+              <div id="ticket-student-name" class="ticket-field-value">-</div>
+            </div>
+            <div>
+              <div class="ticket-field-label">Register Number</div>
+              <div id="ticket-reg-no" class="ticket-field-value">-</div>
+            </div>
+            <div>
+              <div class="ticket-field-label">Date & Time</div>
+              <div id="ticket-event-date" class="ticket-field-value">-</div>
+            </div>
+            <div>
+              <div class="ticket-field-label">Venue</div>
+              <div id="ticket-venue" class="ticket-field-value">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.print()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          Print Ticket
+        </button>
+        <button type="button" class="btn btn-primary" onclick="App.closeModal('registration-modal')">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/events.js') }}"></script>
+{% endblock %}

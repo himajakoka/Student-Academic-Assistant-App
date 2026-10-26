@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+
+  <!-- Breadcrumbs -->
+  <nav style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+    <a href="{{ url_for('home') }}">Home</a>
+    <span>/</span>
+    <a href="{{ url_for('events_page') }}">Events</a>
+    <span>/</span>
+    <span style="color: var(--navy-800); font-weight: 600;">{{ event.title }}</span>
+  </nav>
+
+  <!-- Event Header Banner -->
+  {% set category_lower = event.category | lower %}
+  {% set percent = ((event.registered_count / event.capacity) * 100) | round | int %}
+
+  <div class="event-card-banner event-banner-{{ category_lower }}" style="height: auto; min-height: 180px; border-radius: var(--radius-xl); padding: 2.5rem; margin-bottom: 2.5rem; display: flex; flex-direction: column; justify-content: flex-end; position: relative;">
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 1rem;">
+      <span class="category-pill category-{{ category_lower }}" style="font-size: 0.85rem; padding: 0.4rem 1rem;">
+        {{ event.category }}
+      </span>
+      {% if event.is_past %}
+        <span class="status-pill status-past" style="font-size: 0.85rem; padding: 0.4rem 0.9rem;">Past Event</span>
+      {% elif event.is_full %}
+        <span class="status-pill status-full" style="font-size: 0.85rem; padding: 0.4rem 0.9rem;">Full Capacity</span>
+      {% else %}
+        <span class="status-pill status-open" style="font-size: 0.85rem; padding: 0.4rem 0.9rem;">Registrations Open</span>
+      {% endif %}
+    </div>
+
+    <h1 style="color: #ffffff; font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;">
+      {{ event.title }}
+    </h1>
+
+    <div style="color: rgba(255, 255, 255, 0.85); font-size: 0.95rem; margin-top: 0.5rem;">
+      Organized by: <strong>{{ event.organizer_name or 'Department Event Committee' }}</strong>
+    </div>
+  </div>
+
+  <!-- Two Column Layout: Description & Registration Action Card -->
+  <div style="display: grid; grid-template-columns: 2fr 1.1fr; gap: 2.5rem; align-items: flex-start;">
+    
+    <!-- Left Column: Full Description & Event Information -->
+    <div>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 2.25rem; box-shadow: var(--shadow-sm); margin-bottom: 2rem;">
+        <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--navy-900); margin-bottom: 1.25rem;">
+          About This Event
+        </h2>
+        <div style="color: var(--navy-700); font-size: 1.02rem; line-height: 1.7; white-space: pre-line;">
+          {{ event.description }}
+        </div>
+      </div>
+
+      <!-- Guidelines Card -->
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--navy-900); margin-bottom: 1rem;">
+          Participant Instructions & Guidelines
+        </h3>
+        <ul style="padding-left: 1.25rem; color: var(--text-muted); font-size: 0.92rem; line-height: 1.7;">
+          <li>All participants must carry their University Student ID card along with their digital registration pass.</li>
+          <li>Reporting time is 15 minutes before scheduled start time. Late arrivals may have their spots forfeited.</li>
+          <li>Attendance will be verified at the entrance using the unique Registration ID.</li>
+          <li>In case you cannot attend, please cancel your registration via the <a href="{{ url_for('my_registrations_page') }}">My Registrations</a> page.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Right Column: Event Snapshot & Registration Box -->
+    <div>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-md); position: sticky; top: 96px;">
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--navy-900); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+          Event Details
+        </h3>
+
+        <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 1.75rem;">
+          <div style="display: flex; align-items: flex-start; gap: 0.85rem;">
+            <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Date</div>
+              <div style="font-size: 0.95rem; font-weight: 700; color: var(--navy-900);">{{ event.event_date }}</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: flex-start; gap: 0.85rem;">
+            <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Time</div>
+              <div style="font-size: 0.95rem; font-weight: 700; color: var(--navy-900);">{{ event.event_time }}</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: flex-start; gap: 0.85rem;">
+            <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Venue</div>
+              <div style="font-size: 0.95rem; font-weight: 700; color: var(--navy-900);">{{ event.venue }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Capacity Bar -->
+        <div class="capacity-wrapper" style="margin-bottom: 1.75rem;">
+          <div class="capacity-info">
+            <span style="color: var(--text-muted); font-size: 0.82rem;">Capacity Status</span>
+            <span style="font-weight: 700; color: var(--navy-900);">{{ event.registered_count }} / {{ event.capacity }}</span>
+          </div>
+          <div class="capacity-bar" style="height: 8px;">
+            <div class="capacity-progress {% if event.is_full %}full{% elif percent >= 80 %}near-full{% endif %}" style="width: {{ percent }}%;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem;">
+            <span>{{ percent }}% filled</span>
+            <span style="font-weight: 600; color: {% if event.remaining_spots < 10 %}var(--danger){% else %}var(--success){% endif %};">
+              {{ event.remaining_spots }} spots left
+            </span>
+          </div>
+        </div>
+
+        <!-- Registration Action Buttons -->
+        {% if event.is_past %}
+          <button class="btn btn-secondary btn-block btn-lg" disabled>
+            Event Concluded
+          </button>
+        {% elif event.is_full %}
+          <button class="btn btn-secondary btn-block btn-lg" disabled>
+            Capacity Full
+          </button>
+        {% else %}
+          <button class="btn btn-primary btn-block btn-lg" onclick="openRegistrationModal({{ event.id }}, '{{ event.title | e }}')">
+            Register for Free
+          </button>
+        {% endif %}
+
+        <div style="margin-top: 1.5rem; text-align: center;">
+          <a href="{{ url_for('events_page') }}" style="font-size: 0.85rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.35rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to All Events
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Student Registration Modal -->
+<div class="modal-backdrop" id="registration-modal">
+  <div class="modal-window">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title">Event Registration</h3>
+        <div id="reg-event-title" style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-top: 0.2rem;">{{ event.title }}</div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="App.closeModal('registration-modal')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <!-- Form View -->
+    <div id="registration-form-view">
+      <form id="student-registration-form">
+        <input type="hidden" id="reg-event-id" value="{{ event.id }}">
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label form-label-required" for="reg-student-name">Student Full Name</label>
+            <input type="text" id="reg-student-name" class="form-control" placeholder="e.g., Rahul Sharma" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label form-label-required" for="reg-student-email">College / Personal Email</label>
+            <input type="email" id="reg-student-email" class="form-control" placeholder="e.g., rahul.s@presidencyuniversity.in" required>
+            <div class="form-help">Confirmation pass will be linked to this email address.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label form-label-required" for="reg-student-regno">Student Register Number (USN)</label>
+            <input type="text" id="reg-student-regno" class="form-control" placeholder="e.g., 2024BCA014" style="text-transform: uppercase;" required>
+            <div class="form-help">Enter your official University Register Number.</div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('registration-modal')">Cancel</button>
+          <button type="submit" id="register-submit-btn" class="btn btn-primary">Confirm Registration</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Success Ticket View -->
+    <div id="registration-success-view" style="display: none;">
+      <div class="modal-body">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <div style="width: 52px; height: 52px; border-radius: 50%; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--navy-900);">Registration Confirmed!</h3>
+          <p style="color: var(--text-muted); font-size: 0.88rem;">Your entry pass is active. Save or print this ticket for campus check-in.</p>
+        </div>
+
+        <div class="ticket-card printable-area">
+          <div class="ticket-header">
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Registration ID</div>
+              <div id="ticket-reg-id" class="ticket-id-tag">REG-2026-XXXX</div>
+            </div>
+            <span class="status-pill status-open">Confirmed Pass</span>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <div id="ticket-event-title" style="font-weight: 700; color: var(--navy-900); font-size: 1.1rem; line-height: 1.3;">{{ event.title }}</div>
+          </div>
+
+          <div class="ticket-grid">
+            <div>
+              <div class="ticket-field-label">Student Name</div>
+              <div id="ticket-student-name" class="ticket-field-value">-</div>
+            </div>
+            <div>
+              <div class="ticket-field-label">Register Number</div>
+              <div id="ticket-reg-no" class="ticket-field-value">-</div>
+            </div>
+            <div>
+              <div class="ticket-field-label">Date & Time</div>
+              <div id="ticket-event-date" class="ticket-field-value">-</div>
+            </div>
+            <div>
+              <div class="ticket-field-label">Venue</div>
+              <div id="ticket-venue" class="ticket-field-value">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.print()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          Print Ticket
+        </button>
+        <button type="button" class="btn btn-primary" onclick="App.closeModal('registration-modal'); window.location.reload();">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/events.js') }}"></script>
+{% endblock %}
